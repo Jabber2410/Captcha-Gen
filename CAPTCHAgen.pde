@@ -30,9 +30,7 @@ String txtcapt;
 
 void setup() {
   size(200, 100);
-  thread("starteJavaFX");
-  //imgRobot = loadImage("robot.png"); 
-  genCapt();
+  thread("starteJavaFX"); 
 }
 
 
@@ -51,8 +49,9 @@ void handleEnter() {
   } else {
     lb_feedback.setText("Help a Robot");
     lb_feedback.setTextFill(Color.RED);
-    //zeigeBildInGUI(imgRobot);
   }
+  tf_enter.setText("");
+  genCapt();
 }
 
 // === JAVAFX SETUP ===
@@ -72,13 +71,20 @@ void starteJavaFX() {
       stage.setScene(new Scene(root));
       stage.setTitle("CAPTCHA Generator");
       stage.setResizable(false);
+      
       stage.show();
     } catch (Exception e) {
       e.printStackTrace();
     }
   });
+  genCapt();
 }
 
+void refreshUI() {
+  if (imgCaptAlt != null) {
+    zeigeBildInGUI(imgCaptAlt);
+  }
+}
 
 void zeigeBildInGUI(PImage pimg) {
   String tempPath = dataPath("temp_img.png");
@@ -87,6 +93,7 @@ void zeigeBildInGUI(PImage pimg) {
   
   if (pv_captcha != null) {
     Platform.runLater(() -> pv_captcha.setImage(impBild, true));
+    
   }
 }
 
@@ -104,7 +111,7 @@ String genTxt () {
   return txtcapt;
 }
 PImage genCaptImg(String text) {
-  PGraphics pg = createGraphics(400, 200);
+  PGraphics pg = createGraphics(600, 300);
   pg.beginDraw();
   pg.background(240); // Leichtes Grau statt hartem Weiß
 
@@ -116,31 +123,35 @@ PImage genCaptImg(String text) {
 
   // 2. SCHRITT: Buchstaben zeichnen
   pg.textAlign(CENTER, CENTER);
+  float charSpacing = pg.width / (text.length() + 1.0); 
+  float baseSize = pg.height * 0.35;
   for (int i = 0; i < text.length(); i++) {
     pg.pushMatrix();
     
     // Variablere Positionen (enger zusammen für Überlappung)
-    float x = 60 + i * 65 + random(-15, 15);
-    float y = pg.height / 2 + random(-30, 30);
+    float x = charSpacing * (i + 0.5) + random(-pg.width * 0.02, pg.width * 0.02);
+    float y = pg.height / 2 + random(-pg.width * 0.1 , pg.width * 0.1 );
     
     pg.translate(x, y);
     pg.rotate(random(-0.7, 0.7)); 
     
     // Zufällige Größe pro Buchstabe
-    pg.textSize(random(50, 85)); 
+    pg.textSize(random(baseSize * 0.7, baseSize * 1.3)); 
     
     // Zufällige Farbe mit Transparenz (Alpha)
-    pg.fill(random(150), random(150), random(150), 220); 
+    pg.fill(random(150), 220); 
     
     pg.text(text.charAt(i), 0, 0);
     pg.popMatrix();
   }
   
   // 3. SCHRITT: Komplexe Störformen
-  for (int i = 0; i < 40; i++) {
+  float density = 5;
+  float count = int((pg.width * pg.height) / 10000 * density);
+  for (int i = 0; i < count; i++) {
     // Zufällige Graustufe und Transparenz
     pg.stroke(random(50, 180), random(100, 200)); 
-    pg.strokeWeight(random(1, 4));
+    pg.strokeWeight(random(1, 4.2));
     pg.noFill();
     
     float x1 = random(pg.width);
@@ -160,8 +171,8 @@ PImage genCaptImg(String text) {
   int[] tempPixels = new int[pg.pixels.length];
   for (int y = 0; y < pg.height; y++) {
     for (int x = 0; x < pg.width; x++) {
-      // Berechnet eine Wellenbewegung basierend auf der Sinus-Funktion
-      int offsetX = (int) (sin(y * 0.1) * 5); 
+      
+      int offsetX = (int) (sin(y * 0.1) * 7); 
       int newX = constrain(x + offsetX, 0, pg.width - 1);
       tempPixels[y * pg.width + x] = pg.pixels[y * pg.width + newX];
     }
@@ -171,50 +182,3 @@ PImage genCaptImg(String text) {
   pg.endDraw();
   return pg.get();
 }
-
-/*PImage genCaptImg(String text) {
-  PGraphics pg = createGraphics(400, 200);
-  pg.beginDraw();
-  pg.background(255);
-  pg.textSize(60);
-  pg.textAlign(CENTER, CENTER);
-
-  for (int i = 0; i < text.length(); i++) {
-    pg.pushMatrix();
-    
-    float x = 50 + i * 70 + random(-25, 25);
-    float y = pg.height / 2 + random(-60, 60);
-    
-    pg.translate(x, y);
-    pg.rotate(random(-0.6, 0.6)); 
-    pg.fill(random(200), random(200), random(200)); 
-    
-    pg.text(text.charAt(i), 0, 0);
-    pg.popMatrix();
-  }
-  
-    for (int i = 0; i < 30; i++) {
-    pg.stroke(random(100, 200)); 
-    pg.strokeWeight(random(1, 3));
-    pg.noFill(); // Verhindert, dass Kreise den Text mit Weiß/Farbe füllen
-    
-    float x1 = random(pg.width);
-    float y1 = random(pg.height);
-    float x2 = random(pg.width);
-    float y2 = random(pg.height);
-    float shape = random(1);
-    
-    if (shape < 0.3) {
-      // Zeichne einen Kreis
-      pg.ellipse(x1, y1, x2, x2);
-    } else if(shape >= 0.3 && shape < 0.6) {
-      // Zeichne ein kleines Rechteck, das auch leicht gedreht ist
-      pg.rect(x1, y1, x2, y2);
-    } else {
-      pg.line(x1, y1, x2, y2);
-    }
-   } 
-
-  pg.endDraw();
-  return pg.get();
-}*/

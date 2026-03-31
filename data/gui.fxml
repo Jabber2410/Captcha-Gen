@@ -43,7 +43,7 @@
 
 <VBox alignment="CENTER" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
   <children>
-      <PictureViewer fx:id="pv_captcha" hbarPolicy="NEVER" prefHeight="200.0" prefWidth="400.0" vbarPolicy="NEVER" />
+      <PictureViewer fx:id="pv_captcha" hbarPolicy="NEVER" prefHeight="300.0" prefWidth="600.0" vbarPolicy="NEVER" />
       <HBox alignment="CENTER" spacing="10.0">
          <children>
             <Pane layoutX="105.0" layoutY="15.0" HBox.hgrow="ALWAYS" />
