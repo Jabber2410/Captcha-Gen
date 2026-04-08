@@ -9,9 +9,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.paint.Color; // Achtung: JavaFX Color vs Processing color
+import javafx.scene.paint.Color;
 
-// === GUI ELEMENTE ===
+// === GUI ELEMENTS ===
 @FXML
 imp.PictureViewer pv_captcha;
 @FXML
@@ -23,10 +23,10 @@ TextField tf_enter;
 @FXML
 Label lb_feedback;
 
-// === Bild-Variablen ===
-PImage imgCaptAlt, imgRobot;
+
+PImage imgCapt;
 int lengthCapt = 5;
-String txtcapt;
+String txtCapt;
 
 void setup() {
   size(200, 100);
@@ -36,14 +36,14 @@ void setup() {
 
 // === EVENT-HANDLER ===
 @FXML
-void handleGenerate() {
+void handleGeneratePress() {
   genCapt();
 }
 
 @FXML
-void handleEnter() {
+void handleEnterPress() {
  String value = tf_enter.getText().toUpperCase();
-  if(value.equals(txtcapt)) { 
+  if(value.equals(txtCapt)) { 
     lb_feedback.setText("You are not a Robot");
     lb_feedback.setTextFill(Color.GREEN);
   } else {
@@ -65,7 +65,7 @@ void starteJavaFX() {
       java.io.File fxmlFile = new java.io.File(dataPath("gui.fxml"));
       loader.setLocation(fxmlFile.toURI().toURL());
       
-      loader.setController(this); // Dieser Sketch ist der Controller
+      loader.setController(this); 
       
       Parent root = loader.load();
       stage.setScene(new Scene(root));
@@ -80,13 +80,9 @@ void starteJavaFX() {
   genCapt();
 }
 
-void refreshUI() {
-  if (imgCaptAlt != null) {
-    zeigeBildInGUI(imgCaptAlt);
-  }
-}
 
-void zeigeBildInGUI(PImage pimg) {
+
+void showImgInGUI(PImage pimg) {
   String tempPath = dataPath("temp_img.png");
   pimg.save(tempPath);
   imp.Picture impBild = new imp.Picture(tempPath);
@@ -98,75 +94,77 @@ void zeigeBildInGUI(PImage pimg) {
 }
 
 void genCapt() {
-  imgCaptAlt = genCaptImg(genTxt());
-  zeigeBildInGUI(imgCaptAlt);
+  imgCapt = genCaptImg(genTxt());
+  showImgInGUI(imgCapt);
 }
 
 String genTxt () {
-  String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Ohne 0, O, I, 1 (Verwechslungsgefahr)
-  txtcapt = "";
+  String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No O, 0, 1, I (Too similar) --> Idea Gemini
+  txtCapt = "";
   for (int i = 0; i < lengthCapt; i++) {
-    txtcapt += alphabet.charAt(floor(random(alphabet.length())));
+    txtCapt += alphabet.charAt(floor(random(alphabet.length())));
   }
-  return txtcapt;
+  return txtCapt;
 }
 PImage genCaptImg(String text) {
   PGraphics pg = createGraphics(600, 300);
   pg.beginDraw();
-  pg.background(240); // Leichtes Grau statt hartem Weiß
+  pg.background(240); 
 
-  // 1. SCHRITT: Hintergrund-Rauschen (Punkte)
-  for (int i = 0; i < 2000; i++) {
-    pg.stroke(random(150, 255), 150); // Halbtransparente Punkte
-    pg.point(random(pg.width), random(pg.height));
+  // Background dots --> Idea Gemini
+  for (int i = 0; i < 25000; i++) {
+    pg.stroke(random(150, 255), 150); 
+    pg.point(random(pg.width), random(pg.height)); 
   }
 
-  // 2. SCHRITT: Buchstaben zeichnen
+ 
   pg.textAlign(CENTER, CENTER);
   float charSpacing = pg.width / (text.length() + 1.0); 
   float baseSize = pg.height * 0.35;
   for (int i = 0; i < text.length(); i++) {
     pg.pushMatrix();
     
-    // Variablere Positionen (enger zusammen für Überlappung)
+    // Random position
     float x = charSpacing * (i + 0.5) + random(-pg.width * 0.02, pg.width * 0.02);
     float y = pg.height / 2 + random(-pg.width * 0.1 , pg.width * 0.1 );
     
     pg.translate(x, y);
     pg.rotate(random(-0.7, 0.7)); 
     
-    // Zufällige Größe pro Buchstabe
+    // Random size
     pg.textSize(random(baseSize * 0.7, baseSize * 1.3)); 
     
-    // Zufällige Farbe mit Transparenz (Alpha)
+    // Random color
     pg.fill(random(150), 220); 
     
     pg.text(text.charAt(i), 0, 0);
     pg.popMatrix();
   }
   
-  // 3. SCHRITT: Komplexe Störformen
+  // Different shapes
   float density = 5;
   float count = int((pg.width * pg.height) / 10000 * density);
   for (int i = 0; i < count; i++) {
-    // Zufällige Graustufe und Transparenz
+    
     pg.stroke(random(50, 180), random(100, 200)); 
     pg.strokeWeight(random(1, 4.2));
     pg.noFill();
     
-    float x1 = random(pg.width);
-    float y1 = random(pg.height);
+    float x = random(pg.width);
+    float y = random(pg.height);
     float size = random(20, 100);
     float shape = random(1);
     
     if (shape < 0.3) {
-      pg.ellipse(x1, y1, size, size * random(0.5, 1.5));
+      pg.ellipse(x, y, size, size * random(0.5, 1.5));
     } else if(shape < 0.6) {
-      pg.rect(x1, y1, size, size * random(0.5, 1.5));
+      pg.rect(x, y, size, size * random(0.5, 1.5));
     } else {
-      pg.line(x1, y1, random(pg.width), random(pg.height));
+      pg.line(x, y, random(pg.width), random(pg.height));
     }
   } 
+  
+  // Wave filter --> Idea and formula: Gemini 
   pg.loadPixels();
   int[] tempPixels = new int[pg.pixels.length];
   for (int y = 0; y < pg.height; y++) {
