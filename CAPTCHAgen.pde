@@ -142,7 +142,7 @@ PImage genCaptImg(String text) {
   }
   
   // Different shapes
-  float density = 5;
+  float density = 7;
   float count = int((pg.width * pg.height) / 10000 * density);
   for (int i = 0; i < count; i++) {
     
