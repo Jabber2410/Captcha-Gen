@@ -24,13 +24,15 @@ TextField tf_enter;
 Label lb_feedback;
 
 
-PImage imgCapt;
-int lengthCapt = 5;
+PImage imgCapt, imgRobot, imgWebsite;
+int lengthCapt=5, sCount=0;
 String txtCapt;
 
 void setup() {
   size(200, 100);
-  thread("starteJavaFX"); 
+  imgRobot = loadImage("robot.png");
+  imgWebsite = loadImage("website.png"); 
+  thread("starteJavaFX");
 }
 
 
@@ -44,14 +46,27 @@ void handleGeneratePress() {
 void handleEnterPress() {
  String value = tf_enter.getText().toUpperCase();
   if(value.equals(txtCapt)) { 
-    lb_feedback.setText("You are not a Robot");
+    sCount ++;
+    lb_feedback.setText("You are maybe not a Robot: " + sCount + " solved");
     lb_feedback.setTextFill(Color.GREEN);
+    
   } else {
-    lb_feedback.setText("Help a Robot");
+    lb_feedback.setText("Help, you are a Robot");
     lb_feedback.setTextFill(Color.RED);
+    showImgInGUI(imgRobot);
+    sCount = -1;
+  }
+  if(sCount == -1) {
+    sCount = 0;
+  }else if(sCount < 3) {
+    genCapt();
+  }else if(sCount == 3) {
+    showImgInGUI(imgWebsite);
+    lb_feedback.setText("You are not a Robot");
+  }else if(sCount > 3) {
+    lb_feedback.setText("Succes streak: " + sCount);
   }
   tf_enter.setText("");
-  genCapt();
 }
 
 // === JAVAFX SETUP ===
@@ -82,7 +97,7 @@ void starteJavaFX() {
 
 
 
-void showImgInGUI(PImage pimg) {
+void showCaptImgInGUI(PImage pimg) {
   String tempPath = dataPath("temp_img.png");
   pimg.save(tempPath);
   imp.Picture impBild = new imp.Picture(tempPath);
@@ -93,9 +108,28 @@ void showImgInGUI(PImage pimg) {
   }
 }
 
+void showImgInGUI(PImage pimg) {
+ PGraphics canvas = createGraphics(600, 300);
+  
+  canvas.beginDraw();
+  canvas.background(255); 
+  canvas.imageMode(CENTER); 
+  
+  canvas.image(pimg, canvas.width/2, canvas.height/2);
+  canvas.endDraw();
+  
+  String tempPath = dataPath("temp_result_img.png");
+  canvas.save(tempPath);
+  
+  imp.Picture impBild = new imp.Picture(tempPath);
+  if (pv_captcha != null) {
+    Platform.runLater(() -> pv_captcha.setImage(impBild, true));
+  }
+}
 void genCapt() {
   imgCapt = genCaptImg(genTxt());
-  showImgInGUI(imgCapt);
+  showCaptImgInGUI(imgCapt);
+    Platform.runLater(() -> tf_enter.requestFocus());
 }
 
 String genTxt () {
@@ -106,6 +140,7 @@ String genTxt () {
   }
   return txtCapt;
 }
+
 PImage genCaptImg(String text) {
   PGraphics pg = createGraphics(600, 300);
   pg.beginDraw();
